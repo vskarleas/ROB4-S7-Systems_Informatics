@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.embeddedhtml": "html",
         "stdlib.h": "c",
         "tri.h": "c",
         "utile.h": "c",
@@ -13,6 +14,8 @@
         "cctype": "c",
         "locale": "c",
         "unistd.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "math.h": "c",
+        "affiche.h": "c"
     }
 }

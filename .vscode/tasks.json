@@ -6,14 +6,17 @@
       "command": "/usr/bin/env",
       "args": [
         "CC=clang",
-        "CFLAGS=-g -Wall -Wextra",
+        "CFLAGS=-g -Wall",
         "make",
         "${fileBasenameNoExtension}"
       ],
       "options": {
         "cwd": "${fileDirname}"
       },
-      "group": "build"
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "type": "cppbuild",
