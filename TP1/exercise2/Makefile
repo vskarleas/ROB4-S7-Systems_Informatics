@@ -40,7 +40,7 @@ INCLUDEOPTS = -I$(INCDIR)
 COMPILOPTS = -g -Wall $(INCLUDEOPTS)
 
 # liste des executables
-EXECUTABLES = main
+EXECUTABLES = exemple exemple2
 
 
 #############################################################################
@@ -61,38 +61,11 @@ all : $(EXECUTABLES)
 	@echo "---------------------------------------------"
 	@echo "Compilation du module "$*
 	@echo "---------------------------------------------"
-	$(CC) -c $(COMPILOPTS) $<
+	$(CC) -c $(COMPILOPTS) $< -g -O0
 
 ########################################################
 # regles explicites de compilation separee de modules
 # n'ayant pas de fichier .h ET/OU dependant d'autres modules
-affiche.o : affiche.c affiche.h calcul.h
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Compilation du module "$*
-	@echo "---------------------------------------------"
-	$(CC) -c $(COMPILOPTS) $<
-
-calcul.o : calcul.c calcul.h error.h
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Compilation du module "$*
-	@echo "---------------------------------------------"
-	$(CC) -c $(COMPILOPTS) $<
-
-saisie.o : saisie.c saisie.h error.h
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Compilation du module "$*
-	@echo "---------------------------------------------"
-	$(CC) -c $(COMPILOPTS) $<
-
-main.o : main.c affiche.h saisie.h
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Compilation du module "$*
-	@echo "---------------------------------------------"
-	$(CC) -c $(COMPILOPTS) $<
 
 		
 ########################################################
