@@ -71,13 +71,6 @@ all : $(EXECUTABLES)
 ########################################################
 # regles explicites de creation des executables
 
-main : main.o affiche.o calcul.o error.o saisie.o 
-	@echo ""
-	@echo "---------------------------------------------"
-	@echo "Creation de l'executable "$@
-	@echo "---------------------------------------------"
-	$(CC) $^ $(LDOPTS) -o $@
-
 # regle pour "nettoyer" le r�pertoire
 clean:
 	rm -fR $(EXECUTABLES) *.o 
