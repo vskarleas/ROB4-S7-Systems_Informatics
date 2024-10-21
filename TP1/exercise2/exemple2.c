@@ -11,7 +11,7 @@ double *gen_n_doubles(int n)
   // Initialise le generateur de nombres pseudo-aleatoires
   srand(time(NULL));
 
-  for (int i = 0; i <= n; i++)
+  for (int i = 0; i < n; i++)
   {
     // Genere un reel compris entre 0 et 1
     *(x + i) = (double)rand() / (RAND_MAX);
@@ -22,8 +22,6 @@ double *gen_n_doubles(int n)
 int main(void)
 {
 
-  while (1)
-  {
     // Generer 100 doubles
     double *nombres = gen_n_doubles(100);
     // Les afficher :
@@ -31,6 +29,6 @@ int main(void)
     for (i = 0; i < 100; i++)
       printf("%d | %f\t", i, nombres[i]);
     printf("\n");
-  }
+  
   return 0;
 }
