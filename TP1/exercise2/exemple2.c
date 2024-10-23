@@ -29,6 +29,8 @@ int main(void)
     for (i = 0; i < 100; i++)
       printf("%d | %f\t", i, nombres[i]);
     printf("\n");
+
+    free(nombres); // Libérer la memoire allouée
   
   return 0;
 }

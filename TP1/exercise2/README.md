@@ -13,6 +13,8 @@ exemple.c:9:17: warning: format specifies type 'int *' but the argument has type
 1 warning generated.
 ```
 
+We can say that there is an error at the scanf function that is called on line 9. While examining the code, we can see that we pas the number of n_max instead of the addresse of the variable. Meaning that then it will try to access cells on the memory that it is not allowed because they are reserved from the system. 
+
 # Question 2
 
 We modify the Makefile in order to debug. We add the options -g -O0 and we re-make so that we can launch the debuger on th eterminal: `lldb ./exemple`
@@ -57,7 +59,7 @@ Here is what the pile of the functions call looks like:
     frame #4: 0x000000019a22c274 dyld`start + 2840
 ```
 
-We already know that program violates the access to the memory but what else we can see. Well, the error occurs inside the `scanf` function, which is often related to incorrect use of pointers, uninitialized variables, or improper format specifiers.  The crash originates in a function called `somme_n` from the `exemple` executable, where `scanf` is being called.
+We already know that program violates the access to the memory but what else we can see. Well, the error occurs inside the `scanf` function, which is often related to incorrect use of pointers (we identify the same problem that we found at), uninitialized variables, or improper format specifiers.  The crash originates in a function called `somme_n` from the `exemple` executable, where `scanf` is being called.
 
 This error, escalates up to the `main function` because `somme_n` leads to main function, that is correct if get a look to the code.
 
@@ -69,11 +71,33 @@ scanf("%d", &n_max); // line 9
 
 # Question 3
 
-We compile the programe exemple2.c without any problem. It is supposed to generate 100 doubles (aleartoires between 0 and 1). Well, we can say that probably it does this, however, it do not stop, so we can't verify if it works as expected and personally I believe that this is not the general purpose of the program (being on infinite loop). We need to dive deeper on the memory unit and try to understand if everything is as expected or not.
+We compile the programe exemple2.c without any problem. It is supposed to generate 100 doubles (hassard numbers between 0 and 1). Well, we can say that probably it does this, however, it do not stop, so we can't verify if it works as expected and personally I believe that this is not the general purpose of the program (being on infinite loop). We need to dive deeper on the memory unit and try to understand if everything is as expected or not.
+
+After further analysis here are some more interesting points: 
+
+```c
+while(1) //line29
+{
+...
+}
+
+for (i = 0; i <= 100; i++) // line 31
+{
+printf("%d | %f\t", i, nombres[i]);
+}
+
+for (int i = 0; i <= n; i++)  / line 14
+  {
+    // Genere un reel compris entre 0 et 1
+    *(x + i) = (double)rand() / (RAND_MAX);
+  }
+```
+
+We have to verify that we can access all the cells of the table `nombres[i]` that is initialised from `gen_n_doubles(int n)`
 
 # Question 4
 
-We run the program via valgrind and here are our observations:
+We run the program via valgrind with the command `valgrind ./exemple2`, and here are our results:
 
 ```bash
 ^C==7388==
@@ -106,7 +130,9 @@ We run the program via valgrind and here are our observations:
 ==7388== ERROR SUMMARY: 9147 errors from 2 contexts (suppressed: 0 from 0)
 ```
 
-We have an enormous "definitely lost" meaning that we definitely have an infinite loop. Moreover, Valgrid says that there is an issue with memory on line 33, about printf.
+**What we observe ?**
+
+We have an enormous "definitely lost" meaning that the memory is doesnt become "free" from the task. This could lead to an infinite loop that we have already identified above. The program continues to use more memory on every iteration. Moreover, Valgrind says that there is an issue with memory on line 33, about printf.
 
 Let's dive deeper into the results via `valgrind --tool=massif ./exemple2`. here are the results of the ms_print:
 
@@ -146,15 +172,19 @@ Number of snapshots: 83
  Detailed snapshots: [2, 7, 14, 19, 24, 27, 36, 41, 49, 59, 69, 79]
 ```
 
-We can see the amount of memory that is used en fonction de temps.
+The graph shows a steady increase in memory usage, which is typical of a memory leak in a program that allocates memory without freeing it. Exactly what we have identified above.
+
+The problem comes from the fact that in each iteration of the infinite loop, the program generates 100 doubles with the `gen_n_doubles` function but never frees the memory allocated by malloc. This lack of freeing causes a memory leak.
 
 # Question 5
 
 If we check out the code we can verify that this is true at the main function. We have an infinite while `while(1)` that we delete. We also move on with the correction of the printf inside the main function, that was idnciated from valgrind. L'ets try again, which are the results ?
 
+> To be noted that I had already corrected the line 31 in the original program file. This is why we do not see two erros in the image below, but one instead.
+
 ![1729519657215](image/README/1729519657215.png)
 
-We still have some erros. We have 800 bytes that are lost. Valgrind says that there is an issue with gen_n_doubles that is called from the main function (0x109240). We check bsck to this function and we find out that the boucle for trues to access things outside of the allocated memory. We correct the result and here is the final results:|
+We still have some erros. We have 800 bytes that are lost. Valgrind says that there is an issue with gen_n_doubles that is called from the main function (0x109240). We check back to this function and we find out that the boucle for tries to access things outside of the allocated memory.
 
 ```c
 for (int i = 0; i < n; i++)
@@ -166,4 +196,49 @@ for (int i = 0; i < n; i++)
 }
 ```
 
+
+
+We correct the result and here is the final results:|
+
 ![1729519948578](image/README/1729519948578.png)
+
+All the errors have been succesfully treated.
+
+We have to note that we need to do a free(nombres) once everything has been completed because otherwise we will continue to see the same graph obtained above since the only way to free the memory without closing the file is to do a free once we do not need any more the data. This is independent from the fact that program completes afterwards. Here is the uodated memory graph:
+
+```
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Command:            ./exemple2
+Massif arguments:   (none)
+ms_print arguments: massif.out.10572
+--------------------------------------------------------------------------------
+
+
+    KB
+1.797^#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#                                                               
+     |#::::::::@::::::::::::::::::@@::::@::::@:::::@::::@:::::::@:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+     |#:::: :::@: ::::::::::::: ::@ ::::@::::@::: :@::::@:::::: @:::::::::@:::
+   0 +----------------------------------------------------------------------->Gi
+     0                                                                   3.543
+
+Number of snapshots: 67
+ Detailed snapshots: [1 (peak), 9, 26, 31, 36, 41, 46, 53, 63]
+```
