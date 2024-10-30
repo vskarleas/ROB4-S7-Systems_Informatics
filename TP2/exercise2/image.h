@@ -19,7 +19,11 @@ image_t *allouer_image(image_t *p_im,
 
 image_t *dupliquer_image(image_t *src);
 
+image_t *dupliquer_vers_mmap_anon(image_t *src);
+
 void detruire_image(image_t *p);
+
+void detruire_image_mmap(image_t *p);
 
 image_t *charger_image_pgm(char *nom_fichier);
 
