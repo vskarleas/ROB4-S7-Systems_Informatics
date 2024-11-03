@@ -32,8 +32,8 @@ void execute_command(char *command, char **args, pid_t *command_pid, int *status
     waitpid(*command_pid, status, 0); // Wait for the current command and it's process to finish
 }
 
-/* Programme équivalent à la commande shell who & ps & ls−l sans utiliser
-system() (les commandes séparées par « & » s’exécutent en parallèle). */
+/* Programme équivalent à la commande shell who; ps; ls−l sans utiliser
+system() (les commandes séparées par « ; » s’exécutent en succession). */
 int main(int argc, char **argv)
 {
     int status = 0;
