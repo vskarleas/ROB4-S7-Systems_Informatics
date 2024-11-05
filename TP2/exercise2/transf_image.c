@@ -62,18 +62,6 @@ void bruiter_image_zone(image_t *img, unsigned int pourcent, int x1, int y1, int
 			}
 		}
 	}
-
-	for (int i = x1; i < x2; i++)
-	{
-		for (int j = y1; j < y2; j++)
-		{
-			int random = random_number(0, 100);
-			if (random < pourcent)
-			{
-				VAL(img, i, j) = random_number(0, img->nb_ng);
-			}
-		}
-	}
 }
 
 /* Récupère le temps courant en microsecondes */

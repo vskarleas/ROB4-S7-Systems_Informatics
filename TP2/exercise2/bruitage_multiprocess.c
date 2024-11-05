@@ -80,10 +80,13 @@ int main(int argc, char **argv)
 
 	srand(time(NULL)); // should bhe called only once
 
-	execute_bruitage(shared_img, pcent, 0, 0, segment_width, segment_height);
-	execute_bruitage(shared_img, pcent, segment_width, 0, segment_width, segment_height);
-	execute_bruitage(shared_img, pcent, 0, segment_height, segment_width, segment_height);
-	execute_bruitage(shared_img, pcent, segment_width, segment_height, segment_width, segment_height);
+	for (int k = 0; k < 2; k++)
+	{
+		for(int l = 0; l < 2; l++)
+		{
+			execute_bruitage(shared_img, pcent, k * segment_width, l * segment_height, segment_width, segment_height);
+		}
+	}
 
 	/* REMARKS ON PROCESSING TIME 
 	Here are the results:
@@ -93,10 +96,23 @@ int main(int argc, char **argv)
 	(base) vasilisskarleas@macbookpro exercise2 % ./question2_multiprocess images/12vaches.pgm --bruit 30 images/12vaches_bruit_multiprocess.pgm
 	Operation realisee en 57644 microsecondes.
 
-	We are about at 45% less processing time for this multi-process version.
+	We are about at 48% less processing time for this multi-process version.
+
+	On peut remarquer que si on veut faire des ecritures/lectures en paralell sur un meme fichier dans 
+	le system (comme selui d'un image), on ne peut pas le faire si on avait fait un malloc simple comme 
+	l'habitude. On doit utiliser mmap() pour creer une zone de memoire partagee entre les processus. 
+	C'est ce qu'on a fait ici, tout en declarant que c'est anonyme (du coup universel) avec droits 
+	d'ecriture et lecture respectivement. Ainsi, on peut appeler le bruitage des 4 zones en parallèle 
+	et bien evidement la reduction du temps d'execution.
+
 	*/
 
-	while (wait(&status) > 0);
+    /* Wait for all the processes before continue */
+	while ((waitpid(-1, &status, 0)) > 0);
+
+	
+
+
 
 	/* Compteur de temps final */
 	tf = get_time();
