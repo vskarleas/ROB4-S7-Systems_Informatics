@@ -98,17 +98,16 @@ int main(int argc, char **argv)
 
 	We are about at 48% less processing time for this multi-process version.
 
-	On peut remarquer que si on veut faire des ecritures/lectures en paralell sur un meme fichier dans 
-	le system (comme selui d'un image), on ne peut pas le faire si on avait fait un malloc simple comme 
-	l'habitude. On doit utiliser mmap() pour creer une zone de memoire partagee entre les processus. 
-	C'est ce qu'on a fait ici, tout en declarant que c'est anonyme (du coup universel) avec droits 
-	d'ecriture et lecture respectivement. Ainsi, on peut appeler le bruitage des 4 zones en parallèle 
-	et bien evidement la reduction du temps d'execution.
+	We can notice that if we want to do writings/reads in parallel on the same file in the system
+	(like an image), we cannot do it if we had done a simple malloc as usual. We must use mmap()
+	to create a shared memory area between processes. This is what we did here, while declaring
+	that it is anonymous (so universal) with write and read rights respectively. Thus, we can call
+	the noise of the 4 zones in parallel and of course reduce the execution time.
 
 	*/
 
     /* Wait for all the processes before continue */
-	while ((waitpid(-1, &status, 0)) > 0);
+	while ((waitpid(-1, &status, 0)) > 0); // or we can use wait(NULL) to wait for any child process
 
 	
 
