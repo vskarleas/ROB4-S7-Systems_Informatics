@@ -73,7 +73,13 @@ image_t *dupliquer_vers_mmap_anon(image_t *src)
   }
 
   memcpy(dst, src, sizeof(image_t)); // Structure data
+
+  /* We need to declare what is the starting of the buffer in the mmap reserved memory. 
+  By taking the dst addresse + sizeof(image_t) we are pointing to the start of the buffer 
+  which is an unsigned char. That is the reson why we are doing a cast to unsigned char *
+  */
   dst->buff = (unsigned char *)(dst + 1);
+  
   memcpy(dst->buff, src->buff, src->nx * src->ny); // Pixel data
 
 
