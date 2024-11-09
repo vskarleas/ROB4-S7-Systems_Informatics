@@ -8,6 +8,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define WIDTH 1 // in 32 bits is 0...00001
+#define HEIGHT 2 // in 32 bits is 0...00010
+#define BPP 4 // in 32 bits is 0...00100
+
 #include "img.h"
 
 /* Thi sis a function taht reads the header of a TGA image */
@@ -45,6 +49,7 @@ ui32_t make_pixel(ui8_t r, ui8_t g, ui8_t b)
     return result;
 }
 
+/* Function to read the pixel data of a TGA image and save it to the img_t structure */
 void read_pixels(FILE *f, img_t *img)
 {
     // Allocating the right amount of memory for the pixels
@@ -60,9 +65,9 @@ void read_pixels(FILE *f, img_t *img)
     fseek(f, offset, SEEK_SET);
 
     // Found out that on TGA the pixels are declared from bottom to top and from left to right. That is why read the pixels as follows
-    for (int i = img->height - 1; i >= 0 ; i--) // i represnts the rows
+    for (int i = img->height - 1; i >= 0; i--) // i represnts the rows
     {
-        for (int j =  0; j < img->width; j++)  // j is columns of the image
+        for (int j = 0; j < img->width; j++) // j is columns of the image
         {
             ui8_t r, g, b;
 
@@ -75,9 +80,9 @@ void read_pixels(FILE *f, img_t *img)
             img->pixels[i * img->width + j] = pixel; // Storing the pixel data in the array of pixels
         }
     }
-
 }
 
+/* Function to write the pixel data of a TGA image to a PPM file */
 void write_ppm(const char *filename, const img_t *img)
 {
     FILE *f = fopen(filename, "wb");
@@ -113,4 +118,63 @@ void write_ppm(const char *filename, const img_t *img)
     }
 
     fclose(f); // clsoing the ppm file
+}
+
+/* Function to print the information about the image */
+void print_info(const img_t *img, ui32_t data)
+{
+    //when bitwise returns 0, then if(0) <=> false
+    // != 0 if and only if the last bit is 1
+    /* ex: data == 0101 meaning that bpp and width are applied. Then when we test for & 0001 and & 0100 the operation will return 1 meaming that it will proceed */
+    if (data & WIDTH) 
+    {
+        printf("Width: %u\n", img->width);
+    }
+    if (data & HEIGHT)
+    {
+        printf("Height: %u\n", img->height);
+    }
+    if (data & BPP)
+    {
+        printf("Bits per pixel: %u\n", img->bitsperpixel);
+    }
+}
+
+ui32_t parse_args(int argc, char **argv, char **input, char **output)
+{
+    ui32_t flags = 0;
+    *input = NULL;
+    *output = NULL;
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--width") == 0)
+        {
+            flags = flags | WIDTH;
+        }
+        else if (strcmp(argv[i], "--height") == 0)
+        {
+            flags = flags | HEIGHT;
+        }
+        else if (strcmp(argv[i], "--bpp") == 0)
+        {
+            flags = flags | BPP;
+        }
+        else if (strcmp(argv[i], "--in") == 0 && i + 1 < argc) // make sure that there is still another argument after it
+        {
+            *input = argv[++i];
+        }
+        else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc)
+        {
+            *output = argv[++i];
+        }
+    }
+
+    if (*input == NULL || *output == NULL)
+    {
+        fprintf(stderr, "Input and output files must be specified\n");
+        exit(1);
+    }
+
+    return flags;
 }

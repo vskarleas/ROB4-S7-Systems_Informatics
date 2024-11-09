@@ -40,7 +40,7 @@ INCLUDEOPTS = -I$(INCDIR)
 COMPILOPTS = -g -Wall $(INCLUDEOPTS)
 
 # liste des executables
-EXECUTABLES = print_data to_ppm_image
+EXECUTABLES = print_data tga2ppm tga2ppm_v2
 
 
 #############################################################################
@@ -95,6 +95,13 @@ to_ppm_image.o : to_ppm_image.c img.h binary.h
 	@echo "---------------------------------------------"
 	$(CC) -c $(COMPILOPTS) $<
 
+to_ppm_image_v2.o : to_ppm_image_v2.c img.h binary.h
+	@echo ""
+	@echo "---------------------------------------------"
+	@echo "Compilation du module "$*
+	@echo "---------------------------------------------"
+	$(CC) -c $(COMPILOPTS) $<
+
 ########################################################
 # regles explicites de creation des executables
 
@@ -105,7 +112,14 @@ print_data : print_data.o img.o binary.o
 	@echo "---------------------------------------------"
 	$(CC) -o $@ $^ $(LDOPTS)
 
-to_ppm_image : to_ppm_image.o img.o binary.o
+tga2ppm : to_ppm_image.o img.o binary.o
+	@echo ""
+	@echo "---------------------------------------------"
+	@echo "Edition de l'executable "$@
+	@echo "---------------------------------------------"
+	$(CC) -o $@ $^ $(LDOPTS)
+
+tga2ppm_v2 : to_ppm_image_v2.o img.o binary.o
 	@echo ""
 	@echo "---------------------------------------------"
 	@echo "Edition de l'executable "$@

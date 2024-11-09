@@ -1,5 +1,5 @@
 // #############################################################################
-// # File to_ppm_image.c
+// # File to_ppm_image_v2.c
 // # UE Informatique systemes - Polytech Sorbonne - 2024/2025 - S7
 // # Authors: Vasileios Filippos Skarleas - All rights reserved.
 // #############################################################################
@@ -13,36 +13,39 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 3)
+    if (argc == 1)
     {
-        fprintf(stderr, "Usage: %s <input_tga_image> <output_ppm_image>\n", argv[0]);
+        fprintf(stderr, "Usage: %s ./ tga2ppm −−width −−height −−bpp −−in test.TGA −−out test.ppm\n", argv[0]);
         return 1;
     }
+
+    char *input_file, *output_file;
+    ui32_t flags = parse_args(argc, argv, &input_file, &output_file);
 
     // Read the binary image data
-    FILE *f = fopen(argv[1], "rb");
+    FILE *f = fopen(input_file, "rb");
     if (f == NULL)
     {
-        fprintf(stderr, "Error opening input file: %s\n", argv[1]);
+        fprintf(stderr, "Error opening input file: %s\n", input_file);
         return 1;
     }
 
-    // From print_data.c
     img_t img;
     read_header(f, &img);
     ui32_t size = file_size(f);
 
-    printf("File name: %s\n", argv[1]);
+    printf("File name: %s\n", input_file);
     printf("File size: %u\n", size);
-    printf("Image size: %u x %u\n", img.width, img.height);
-    printf("Bits Per Pixel: %u\n", img.bitsperpixel);
+    print_info(&img, flags);
 
     // Add pixels data to img_t
     read_pixels(f, &img);
 
     // Write the image to a PPM file
-    write_ppm(argv[2], &img);
-    printf("PPM creation file was succesful and image saved as: %s\n", argv[2]);
+    write_ppm(output_file, &img);
+    printf("PPM creation file was successful and image saved as: %s\n", output_file);
 
-    fclose(f); // closing the tga file
+    fclose(f);        // closing the tga file
+
+    return 0;
 }
