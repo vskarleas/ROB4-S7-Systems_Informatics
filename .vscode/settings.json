@@ -16,6 +16,7 @@
         "unistd.h": "c",
         "sstream": "c",
         "math.h": "c",
-        "affiche.h": "c"
+        "affiche.h": "c",
+        "binary.h": "c"
     }
 }
