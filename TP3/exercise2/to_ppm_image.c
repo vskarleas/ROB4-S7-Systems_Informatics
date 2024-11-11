@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     // From print_data.c
     img_t img;
     read_header(f, &img);
-    ui32_t size = file_size(f);
+    ui32_t size = file_size(argv[1]);
 
     printf("File name: %s\n", argv[1]);
     printf("File size: %u\n", size);

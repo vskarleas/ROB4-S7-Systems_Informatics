@@ -23,6 +23,6 @@ ui16_t read_ui16(FILE *f);
 ui32_t read_ui32(FILE *f);
 
 /* Returns the size of a file in bytes */
-ui32_t file_size(FILE *fname);
+ui32_t file_size(const char *fname);
 
 #endif

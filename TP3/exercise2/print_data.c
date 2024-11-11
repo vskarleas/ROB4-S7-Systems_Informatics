@@ -28,10 +28,10 @@ int main(int argc, char *argv[])
 
     img_t img;
     read_header(f, &img);
-    ui32_t size = file_size(f);
+    ui32_t size = file_size(argv[1]);
 
     printf("File name: %s\n", argv[1]);
-    printf("File size: %u\n", size);
+    printf("File size: %u bytes\n", size);
     printf("Image size: %u x %u\n", img.width, img.height);
     printf("Bits Per Pixel: %u\n", img.bitsperpixel);
 

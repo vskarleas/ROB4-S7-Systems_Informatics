@@ -67,7 +67,7 @@ all : $(EXECUTABLES)
 # regles explicites de compilation separee de modules
 # n'ayant pas de fichier .h ET/OU dependant d'autres modules
 
-img.o : img.c img.h
+img.o : img.c img.h binary.h
 	@echo ""
 	@echo "---------------------------------------------"
 	@echo "Compilation du module "$*

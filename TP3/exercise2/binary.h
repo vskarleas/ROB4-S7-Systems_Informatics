@@ -13,7 +13,13 @@ typedef unsigned short int ui16_t; // short int is 16 bits by default
 
 typedef unsigned int ui32_t; // this is 32 bits by default
 
+ui8_t read_ui8(FILE *f);
+
+ui16_t read_ui16(FILE *f);
+
+ui32_t read_ui32(FILE *f);
+
 /* Returns the file's size */
-ui32_t file_size(FILE *fname);
+ui32_t file_size(const char *fname);
 
 #endif

@@ -13,24 +13,25 @@
 #define BPP 4 // in 32 bits is 0...00100
 
 #include "img.h"
+#include "binary.h"
 
 /* Thi sis a function taht reads the header of a TGA image */
 void read_header(FILE *f, img_t *img)
 {
     // INFO: The file has already been opened in the main function. Here we only perfom the read
     // Reading the header of the image
-    fread(&img->idlength, sizeof(img->idlength), 1, f);
-    fread(&img->colourmaptype, sizeof(img->colourmaptype), 1, f);
-    fread(&img->datatypecode, sizeof(img->datatypecode), 1, f);
-    fread(&img->colourmaporigin, sizeof(img->colourmaporigin), 1, f);
-    fread(&img->colourmaplength, sizeof(img->colourmaplength), 1, f);
-    fread(&img->colourmapdepth, sizeof(img->colourmapdepth), 1, f);
-    fread(&img->x_origin, sizeof(img->x_origin), 1, f);
-    fread(&img->y_origin, sizeof(img->y_origin), 1, f);
-    fread(&img->width, sizeof(img->width), 1, f);
-    fread(&img->height, sizeof(img->height), 1, f);
-    fread(&img->bitsperpixel, sizeof(img->bitsperpixel), 1, f);
-    fread(&img->imagedescriptor, sizeof(img->imagedescriptor), 1, f);
+    img->idlength = read_ui8(f);
+    img->colourmaptype = read_ui8(f);
+    img->datatypecode = read_ui8(f);
+    img->colourmaporigin = read_ui16(f);
+    img->colourmaplength = read_ui16(f);
+    img->colourmapdepth = read_ui8(f);
+    img->x_origin = read_ui16(f);
+    img->y_origin = read_ui16(f);
+    img->width = read_ui16(f);
+    img->height = read_ui16(f);
+    img->bitsperpixel = read_ui8(f);
+    img->imagedescriptor = read_ui8(f);
 }
 
 ui32_t *get_pixel(const img_t *img, int row, int col)
@@ -45,7 +46,7 @@ ui32_t make_pixel(ui8_t r, ui8_t g, ui8_t b)
 {
     // INFO: We have 8 bit sleft for the transparency that are not declared here
     //  since the syntax of every pixel is [r, g, b, transparency]
-    ui32_t result = (r << 24) | (g << 16) | (b << 8); // Using bits shifting to place the values in the correct positions
+    ui32_t result = (r << 24) | (g << 16) | (b << 8); // Using bits shifting to place the values in the correct positions. HERE WE ARE READING FROM LEFT TO RIGHT
     return result;
 }
 
@@ -62,7 +63,8 @@ void read_pixels(FILE *f, img_t *img)
 
     // Seeking to the beginning of the pixel data
     int offset = (unsigned short int)(img->idlength) + (unsigned short int)(img->colourmaptype) * (img->colourmaplength);
-    fseek(f, offset, SEEK_SET);
+
+    fseek(f, offset, SEEK_SET); // fseek moves the file pointer to the specified position that we are calculating by using the formula given in the subject
 
     // Found out that on TGA the pixels are declared from bottom to top and from left to right. That is why read the pixels as follows
     for (int i = img->height - 1; i >= 0; i--) // i represnts the rows

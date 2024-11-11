@@ -6,11 +6,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
-/* We need to test out the functions read_ui8, read_ui16 and read_ui32. That is the 
+/* We need to test out the functions read_ui8, read_ui16 and read_ui32. That is the
 reason why we need to create a binary file that includes such information */
-int main() {
+int main()
+{
     FILE *file = fopen("test_binary.bin", "wb");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         perror("Error creating file");
         return 1;
     }
