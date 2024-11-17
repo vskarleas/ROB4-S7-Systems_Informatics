@@ -95,7 +95,7 @@ ui.o : ui.c ui.h
 	@echo "---------------------------------------------"
 	$(CC) -c $(COMPILOPTS) $<
 
-commands.o : commands.c commands.h ui.h macros.h
+commands.o : commands.c commands.h ui.h macros.h logic.h
 	@echo ""
 	@echo "---------------------------------------------"
 	@echo "Compilation du module "$*

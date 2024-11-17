@@ -12,6 +12,7 @@
 #include "commands.h"
 #include "ui.h"
 #include "macros.h"
+#include "logic.h"
 
 /* Array of function pointers that includes the builtin declaration of functions found at builtin_str declared on macros.h  */
 int (*builtin_func[])(char **) = {
@@ -103,43 +104,58 @@ int command_date(char **args)
 /* Declaration of the echo command */
 int command_echo(char **args)
 {
-    int i = 1; // start from the second argument
-    while (args[i] != NULL)
+    if (stdout_redirect_detection(args))
     {
-        printf("%s ", args[i]);
-        i++;
+        // Implement redirection
+        return command_launch_stdout(args);
     }
-    printf("\n");
-    return 1;
+    else
+    {
+        int i = 1; // start from the second argument
+        while (args[i] != NULL)
+        {
+            printf("%s ", args[i]);
+            i++;
+        }
+        printf("\n");
+        return 1;
+    }
 }
 
 /* Declaration of the cat command */
 int command_cat(char **args)
 {
-    FILE *file;
-    char line[MAX_LINE_LENGTH];
-    if (args[1] == NULL) // first check for the existence of the argument
+    if (pipe_detection(args))
     {
-        fprintf(stderr, "Error: Expected the argument \"cat\"\n");
+        return command_launch_pipe(args);
     }
     else
     {
-        file = fopen(args[1], "r");
-        if (file == NULL)
+        FILE *file;
+        char line[MAX_LINE_LENGTH];
+        if (args[1] == NULL) // first check for the existence of the argument
         {
-            perror("Error: Failed to open the file");
+            fprintf(stderr, "Error: Expected the argument \"cat\"\n");
         }
         else
         {
-            while (fgets(line, MAX_LINE_LENGTH, file))
+            file = fopen(args[1], "r");
+            if (file == NULL)
             {
-                printf("%s", line);
+                perror("Error: Failed to open the file");
             }
-            fclose(file);
+            else
+            {
+                while (fgets(line, MAX_LINE_LENGTH, file))
+                {
+                    printf("%s", line);
+                }
+                fclose(file);
+            }
         }
-    }
 
-    return 1;
+        return 1;
+    }
 }
 
 /* Declaration of the wc command */
@@ -175,16 +191,15 @@ int command_wc(char **args)
 
 /*
   List of builtin commands, followed by their corresponding functions.
-  This list follows exactly the ordering used at int (**builtin_func[])(char **) 
+  This list follows exactly the ordering used at int (**builtin_func[])(char **)
   that can be found at commands.c file.
  */
 const char *builtin_str[] = {
-  "cd",
-  "help",
-  "exit",
-  "pwd",
-  "date",
-  "echo",
-  "cat",
-  "wc"
-};
+    "cd",
+    "help",
+    "exit",
+    "pwd",
+    "date",
+    "echo",
+    "cat",
+    "wc"};
