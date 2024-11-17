@@ -3,6 +3,7 @@
 // # UE Informatique systemes - Polytech Sorbonne - 2024/2025 - S7
 // # Authors: Vasileios Filippos Skarleas - All rights reserved.
 // #############################################################################
+#include <stdio.h>
 
 #ifndef _BINARY_H_
 #define _BINARY_H_
