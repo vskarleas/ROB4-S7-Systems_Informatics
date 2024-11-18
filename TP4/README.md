@@ -1,5 +1,7 @@
 # TP4 (Shelly software)
 
+INFORMATION: Please make sure that your computer support clang compilator, otherwise you need to use gcc. Simply change the line CC = clang to CC = gcc on the Makefile.
+
 ## Structure of the program
 
 We can find several files that come with the Shelly software. Here is the definition of teh different files:
