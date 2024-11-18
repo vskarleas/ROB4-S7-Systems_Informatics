@@ -211,7 +211,7 @@ char **parse_line_v2(char *line, int *arg_count)
             }
         }
 
-        *arg_count = position; // updating the number of arguments found in the line
+        *arg_count = position; // updating the number of arguments found in the line sinc eit's in sequence with the position integer
         arg = strtok(NULL, DELIMITERS);
     }
 
