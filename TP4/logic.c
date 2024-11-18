@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>   // pid_t , uid_t , gid_t
 #include <sys/utsname.h> // struct utsname
+#include <ctype.h>
 #include <fcntl.h>
 
 #include "logic.h"
@@ -97,7 +98,7 @@ char *read_line_v2()
 }
 
 /* It divides the line that was read in arguments */
-char **parse_line(char *line, int *arg_count)
+char **parse_line(char *line, int *arg_count, int *nb_chain_commands)
 {
     // int arg_size = MAX_ARG_LENGTH;
     int index = 0;
@@ -133,6 +134,16 @@ char **parse_line(char *line, int *arg_count)
     while (arg != NULL)
     {
         arguments[index] = arg;
+        if (strcmp(arguments[index], ";") == 0)
+        {
+            *nb_chain_commands = *nb_chain_commands + 1;
+        }
+
+        int len = strlen(arguments[index]);
+        if (len > 0 && arguments[index][len - 1] == ';')
+        {
+            *nb_chain_commands = *nb_chain_commands + 1;
+        }
         index++;
         *arg_count = index; // updating the number of arguments found in the line
 
@@ -147,6 +158,7 @@ char **parse_line(char *line, int *arg_count)
                 arguments[i] = (char *)malloc(MAX_ARG_LENGTH * sizeof(char));
                 if (arguments[i] == NULL)
                 {
+                    free(arguments);
                     fprintf(stderr, "arguments table allocation failed at number %d\n", i + 1);
                     exit(EXIT_FAILURE);
                 }
@@ -155,6 +167,7 @@ char **parse_line(char *line, int *arg_count)
             // Treat error if memory reallocation failed
             if (arguments == NULL)
             {
+                free(arguments);
                 fprintf(stderr, "arguments table reallocation failed\n");
                 exit(EXIT_FAILURE);
             }
@@ -165,6 +178,44 @@ char **parse_line(char *line, int *arg_count)
 
     arguments[index] = NULL; // Null in order to declare the termination of the array of arguments
 
+    return arguments;
+}
+
+char **parse_line_v2(char *line, int *arg_count)
+{
+
+    int buffer_size = MAX_ARG_LENGTH, position = 0;
+    char **arguments = malloc(buffer_size * sizeof(char *));
+    char *arg;
+
+    if (arguments == NULL)
+    {
+        fprintf(stderr, "arguments table allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    arg = strtok(line, DELIMITERS);
+    while (arg != NULL)
+    {
+        arguments[position] = arg;
+        position++;
+
+        if (position >= buffer_size)
+        {
+            buffer_size += MAX_ARG_LENGTH;
+            arguments = realloc(arguments, buffer_size * sizeof(char *));
+            if (arguments == NULL)
+            {
+                fprintf(stderr, "Reallocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        *arg_count = position; // updating the number of arguments found in the line
+        arg = strtok(NULL, DELIMITERS);
+    }
+
+    arguments[position] = NULL; // termination of the array
     return arguments;
 }
 
@@ -337,7 +388,8 @@ int command_launch_stdout(char **args)
                 exit(EXIT_FAILURE);
             }
 
-            fclose(outer);
+            // fclose(outer);
+            close(fileno(outer));
         }
         else
         {
@@ -367,7 +419,7 @@ bool stdout_redirect_detection(char **args)
     int i = 1;
     while (args[i] != NULL)
     {
-        if (strcmp(args[i], ">") == 0 && args[i + 1] != NULL && args[i + 2] == NULL) // checking if the '>' is followed by a file name and then nothing else
+        if (strcmp(args[i], ">") == 0 && args[i + 1] != NULL && args[i + 2] == NULL) // checking if the '>' is followed by a file name and then nothing else. Already verified that the file name exists on the first test
         {
             return true;
         }
@@ -414,7 +466,9 @@ int command_launch_pipe(char **args)
         pipe_index++;
     }
 
-    // Child process for the first command
+    char **second_command = &args[pipe_index + 1]; // defiing the starting point on memory for args to seccond_command
+    args[pipe_index] = NULL;
+
     pid1 = fork();
     if (pid1 == 0)
     {
@@ -422,9 +476,9 @@ int command_launch_pipe(char **args)
         dup2(fd[1], STDOUT_FILENO); // Redirect stdout to the pipe
         close(fd[1]);               // Close writing end
 
-        // Null-terminate the first command's argument list
-        args[pipe_index] = NULL; //otherwise the execvp doesn't stop
-
+        // execvp(args[0], args);
+        // perror("Error: Failed to execute the first command");
+        // exit(EXIT_FAILURE);
         if (execvp(args[0], args) == -1)
         {
             perror("Error: Failed to execute the first command");
@@ -440,25 +494,40 @@ int command_launch_pipe(char **args)
     pid2 = fork();
     if (pid2 == 0)
     {
-        close(fd[1]);               // Close writing end
+        close(fd[1]);              // Close writing end
         dup2(fd[0], STDIN_FILENO); // Redirect stdin to the pipe
-        close(fd[0]);               // Close reading end
+        close(fd[0]);              // Close reading end
 
-        args[pipe_index + 1] = NULL;
-
-        if (execvp(args[pipe_index + 1], args + pipe_index + 1) == -1)
+        // args[pipe_index + 1] = NULL;
+        // execvp(second_command[0], second_command);
+        // perror("Error: Failed to execute the second command");
+        // exit(EXIT_FAILURE);
+        if (execvp(second_command[0], second_command) == -1)
         {
             perror("Error: Failed to execute the second command");
             exit(EXIT_FAILURE);
         }
     }
+    else if (pid2 < 0)
+    {
+        perror("Error: Failed to fork the second process");
+        exit(EXIT_FAILURE);
+    }
 
     // Parent mode
     close(fd[0]);
     close(fd[1]);
-    waitpid(pid1, &status, 0);
-    waitpid(pid2, &status, 0);
-    return 0;
+    do
+    {
+        waitpid(pid1, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+    do
+    {
+        waitpid(pid2, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+    return 1; // in order to continue the Shelly soft
 }
 
 /* Builtin commands and system commands logic combined all together to an execution script that updates teh status of the main flag */
@@ -502,6 +571,8 @@ int execute(char **args)
             }
         }
     }
+
+    return 1;
 }
 
 /* Main logic and structure of the shell */
@@ -509,9 +580,14 @@ void loop()
 {
     // Variables initailisation
     char *line;
+    // char *temp_line;
     char **arguments;
+    // char **argss;
+    // char **temp_arguments;
     int arg_count = 0;
     int status = 0;
+    int nb_semicolon_symbol = 0;
+    // int index_semicolon = -1;
 
     // Retrieving user name if available
     char *username = getenv("USER");
@@ -545,17 +621,38 @@ void loop()
             // printf("\n%s@macbookpro %% ", username);
             printf("%s@%s %% ", username, hostname);
             line = read_line_v2();
-            arguments = parse_line(line, &arg_count);
+            //arguments = parse_line(line, &arg_count, &nb_semicolon_symbol);
+            arguments = parse_line_v2(line, &arg_count); //simplified version and prevent memory leaks
+            printf("Number of arguments: %d\n", arg_count);
             // for (int i = 0; i < arg_count; i++)
             // {
             //     printf("Argument %d: %s\n", i + 1, arguments[i]);
             // }
 
             // command_launch(arguments);
-            status = execute(arguments);
+            if (nb_semicolon_symbol > 0)
+            {
+                printf("The multiple commands in the same line with the use ';' is not yet completed.\n");
+                /*
+                temp_line = separate_semicolons(line);
+                printf("%s\n", line);
+                argss = parse_line(temp_line, &arg_count, &nb_semicolon_symbol);
 
-            // Freeing memory allocated for the line and arguments and repeat the process if authorised to do so
+                for (int i = 0; i < nb_semicolon_symbol; i++)
+                {
+                    temp_arguments = divide_chain_commands(argss, arg_count, &index_semicolon);
+                    status = execute(temp_arguments);
+                }
+                */
+                status = 1;
+            }
+            else
+            {
+                status = execute(arguments);
+            }
+
             free(line);
+            // free_arguments(arguments);
             free(arguments);
         }
         else
@@ -572,4 +669,87 @@ void loop()
     cyan();
     printf("\n================= END ===============\n");
     reset();
+}
+
+/* Free everything that was allocated on arguments */
+void free_arguments(char **arguments)
+{
+    if (arguments == NULL)
+    {
+        return;
+    }
+
+    for (int i = 0; arguments[i] != NULL; i++)
+    {
+        free(arguments[i]);
+    }
+    free(arguments);
+}
+
+char *separate_semicolons(const char *input)
+{
+    size_t len = strlen(input);
+    size_t new_len = len * 2; // Maximum doubling of length for added spaces
+    char *output = malloc(new_len + 1);
+
+    if (output == NULL)
+    {
+        perror("Memory allocation failed in separate_semicolons");
+        exit(EXIT_FAILURE);
+    }
+
+    size_t j = 0; // Index for the output string
+    for (size_t i = 0; i < len; i++)
+    {
+        output[j++] = input[i];
+
+        if (input[i] == ';')
+        {
+            // Add a space if the next character is not already a space or another semicolon
+            if (i < len - 1 && input[i + 1] != ' ' && input[i + 1] != ';')
+            {
+                output[j++] = ' ';
+            }
+        }
+    }
+
+    output[j] = '\0';
+    return output;
+}
+
+char **divide_chain_commands(char **args, int arg_count, int *index_semicolon)
+{
+    int start = *index_semicolon;
+    int end = start;
+
+    while (end < arg_count && strcmp(args[end], ";") != 0)
+    {
+        end++;
+    }
+
+    int segment_size = end - start;
+    char **segment = malloc((segment_size + 1) * sizeof(char *));
+
+    if (segment == NULL)
+    {
+        perror("Memory allocation failed at divide_chain_commands");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the segment into the new array
+    for (int i = 0; i < segment_size; i++)
+    {
+        segment[i] = strdup(args[start + i]); // in order to prevent issues with memory referecnes
+        if (segment[i] == NULL)
+        {
+            perror("strdup");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    segment[segment_size] = NULL;
+
+    *index_semicolon = (end < arg_count && strcmp(args[end], ";") == 0) ? end + 1 : end;
+
+    return segment;
 }

@@ -22,9 +22,8 @@ else
   # Run the initial commands
   clear
   echo -e "${PURPLE}Initialising environment..."
-  sleep 2
   make clean
-  sleep 2
+  sleep 1
   make
   clear
   echo -e "${NORMAL}This software allows you to have a customised shell environment according to your needs.\n"

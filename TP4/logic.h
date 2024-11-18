@@ -16,7 +16,9 @@ char *read_line_v1();
 char *read_line_v2();
 
 /* It divides the line that was read in arguments */
-char **parse_line(char *line, int *arg_count);
+char **parse_line(char *line, int *arg_count, int *nb_chain_commands);
+
+char **parse_line_v2(char *line, int *arg_count);
 
 /* It executes a command by splitting it into arguments and executing the first one */
 int command_launch(char **args);
@@ -49,5 +51,14 @@ int command_launch_pipe(char **args);
 
 /* Check if the command is followed by '|' character */
 bool pipe_detection(char **args);
+
+/* for the semicolons operator ';' we add spaces before and afetr it if needed */
+char *separate_semicolons(const char *input);
+
+/* It divides the chain of commands */
+char **divide_chain_commands(char **arguments, int arg_count, int *index_of_semicolon);
+
+/* Free everything that was allocated on arguments */
+void free_arguments(char **arguments);
 
 #endif

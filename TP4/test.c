@@ -17,9 +17,10 @@ int main(int argc, char **argv)
   char *line = read_line_v2();
   printf("Read line: %s\n", line);
 
-    int arg_count = 0;
+  int arg_count = 0;
+  int semicolons = 0;
 
-  char **arguments = parse_line(line, &arg_count);
+  char **arguments = parse_line(line, &arg_count, &semicolons);
 
   // int i = 0;
   // while(arguments[i] != NULL)
