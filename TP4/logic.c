@@ -355,7 +355,7 @@ int command_launch_stdout(char **args)
         }
     }
 
-    outer = fopen(args[file_index], "w");
+    outer = fopen(args[file_index], "w"); // had an issue when i was doing simple open
 
     if (outer == NULL)
     {
@@ -389,7 +389,7 @@ int command_launch_stdout(char **args)
             }
 
             // fclose(outer);
-            close(fileno(outer));
+            close(file_descriptor);
         }
         else
         {
