@@ -623,7 +623,7 @@ void loop()
             line = read_line_v2();
             //arguments = parse_line(line, &arg_count, &nb_semicolon_symbol);
             arguments = parse_line_v2(line, &arg_count); //simplified version and prevent memory leaks
-            printf("Number of arguments: %d\n", arg_count);
+            //printf("Number of arguments: %d\n", arg_count);
             // for (int i = 0; i < arg_count; i++)
             // {
             //     printf("Argument %d: %s\n", i + 1, arguments[i]);
