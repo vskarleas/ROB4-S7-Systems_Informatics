@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
+
 #include <sys/shm.h> // Include for shared memory
 
 int server_initialisation(int port) //it returns the socket file descriptor
