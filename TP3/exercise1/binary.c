@@ -44,11 +44,11 @@ ui32_t file_size(const char *fname)
         return 1;
     }
     fseek(file, 0, SEEK_END); // It is the file's pointer to the end of the file so that ftell can see the total size of the file
-    long size = ftell(file);
+    long size = ftell(file); // we are obliged to use the long type here because ftell returns a long int by default
 
     fclose(file);
 
     ui32_t result;
-    result = (unsigned int)size; // We need to cast the result to unsigned int because ftell returns a long int by default
+    result = (ui32_t)size; // We need to cast the result to unsigned int because ftell returns a long int by default
     return result;
 }

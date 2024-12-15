@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        char *command = malloc(strlen("emacs ") + strlen(argv[1]) + 1); // Allocate memory for the command string + 1 for the null terminator \0
+        char *command = malloc(strlen("emacs ") + strlen(argv[1]) + 1); // Allocate memory for the command string + 1 for the null terminator \0 since considered as a list of caracter the char *command
         strcpy(command, "emacs ");
         strcat(command, argv[1]); // concantenation
 

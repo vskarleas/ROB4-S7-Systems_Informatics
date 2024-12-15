@@ -27,6 +27,7 @@ void execute_command(char *command, char **args)
             perror("Error while executing command");
             exit(EXIT_FAILURE);
         }
+        exit(EXIT_SUCCESS); // declare that this child is finished
     }
 }
 

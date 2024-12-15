@@ -80,9 +80,9 @@ int main(int argc, char **argv)
 
 	srand(time(NULL)); // should bhe called only once
 
-	for (int k = 0; k < 2; k++)
+	for (int k = 0; k < segments_x; k++)
 	{
-		for(int l = 0; l < 2; l++)
+		for(int l = 0; l < segments_y; l++)
 		{
 			execute_bruitage(shared_img, pcent, k * segment_width, l * segment_height, segment_width, segment_height);
 		}

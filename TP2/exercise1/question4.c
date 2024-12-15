@@ -27,6 +27,7 @@ void execute_command(char *command, char **args, pid_t *command_pid, int *status
             perror("Error while executing command");
             exit(EXIT_FAILURE);
         }
+        exit(EXIT_SUCCESS); // declare that this child is finished
     }
 
     waitpid(*command_pid, status, 0); // Wait for the current command and it's process to finish

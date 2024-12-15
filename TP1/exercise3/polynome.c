@@ -69,7 +69,7 @@ int main(int argc, char **argv)
                     fprintf(stderr, "Warning: More coefficients were provided than the degree. Ignoring the extra coefficients.\n");
                 }
 
-                free(coeff_buffer); // Free the temporary buffer
+                free(coeff_buffer); // Free the temporary buffer !!! Literaly
             }
         }
         else if ((strcmp(argv[i], "--coeff") == 0) && coeff_parsed == false)

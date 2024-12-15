@@ -40,7 +40,7 @@ INCLUDEOPTS = -I$(INCDIR)
 COMPILOPTS = -g -Wall $(INCLUDEOPTS)
 
 # liste des executables
-EXECUTABLES = main
+EXECUTABLES = polynome
 
 
 #############################################################################
@@ -98,7 +98,7 @@ main.o : main.c affiche.h saisie.h
 ########################################################
 # regles explicites de creation des executables
 
-main : main.o affiche.o calcul.o error.o saisie.o 
+polynome : main.o affiche.o calcul.o error.o saisie.o 
 	@echo ""
 	@echo "---------------------------------------------"
 	@echo "Creation de l'executable "$@
